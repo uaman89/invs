@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ApiService} from '../services/api.service';
 
 @Component({
@@ -8,16 +8,41 @@ import {ApiService} from '../services/api.service';
 })
 export class InvoicesComponent implements OnInit {
 
-  invoices: any[] = [];
+  public invoices: any[] = [];
+  public customerList:any[] = [];
 
-  constructor( private api: ApiService) {
+  public isModalReady = false;
+  public newInvoice = {
+    customer: {
+      name: 'unknown'
+    }
+  };
 
-     api.getInvoices().then( invoices => {
-       this.invoices = invoices;
-     })
+
+  constructor(private api: ApiService) {
+
+    api.getInvoices().then(invoices => {
+      this.invoices = invoices;
+    });
   }
 
   ngOnInit() {
   }
 
+  showModal() {
+    this.api.getCustomers().then(customers => {
+      this.customerList = customers;
+      this.newInvoice.customer = this.customerList[0];
+      this.isModalReady = true;
+    });
+
+  }
+
+  closeModal(){
+    this.newInvoice = {
+      customer: {
+        name: '...loading'
+      }
+    }
+  }
 }

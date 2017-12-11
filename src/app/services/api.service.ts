@@ -7,7 +7,8 @@ import 'rxjs/add/operator/toPromise';
 @Injectable()
 export class ApiService {
 
-  private baseUrl = 'http://localhost:8000/api/';
+  // private baseUrl = 'http://localhost:8000/api/';
+  private baseUrl = '/api/';
 
   constructor(private http: HttpClient) {
   }
@@ -24,7 +25,19 @@ export class ApiService {
       }
     );
 
-  } // end getClient
+  }
+
+  getCustomers(): Promise<any[]>{
+    const url = `${this.baseUrl}customers/`;
+
+    return this.http.get(url).toPromise().then(
+      res => res,
+      error => {
+        console.error('at getCustomers:', error);
+        return Error(`can't load customers`);
+      }
+    );
+  }
 /*
   public getClientList(params = {}): Observable<any[]> {
 
