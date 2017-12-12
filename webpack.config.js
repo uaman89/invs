@@ -75,7 +75,8 @@ module.exports = {
     ]
   },
   "output": {
-    "path": path.join(process.cwd(), "dist"),
+    //"path": path.join(process.cwd(), "dist"),
+    "path": path.join(process.cwd(), "../javascript-invoices/public"),
     "filename": "[name].bundle.js",
     "chunkFilename": "[id].chunk.js"
   },
@@ -357,7 +358,8 @@ module.exports = {
         "favicon.ico"
       ],
       "globOptions": {
-        "cwd": "C:\\web_projects\\javascript-invoices\\frontend\\src",
+        //"cwd": "C:\\web_projects\\javascript-invoices\\frontend\\src",
+        "cwd": process.cwd() + "\\src",
         "dot": true,
         "ignore": "**/.gitkeep"
       }
