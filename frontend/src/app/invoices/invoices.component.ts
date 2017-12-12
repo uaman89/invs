@@ -108,7 +108,14 @@ export class InvoicesComponent implements OnInit {
   }
 
   removeProductFromInvoiceForm(product) {
-    this.newInvoice.products.delete(product);
+    debugger;
+    if (product.__invoiceItemId) {
+      this.api.deleteInvoiceItem(this.newInvoice.id, product.__invoiceItemId).then(() => {
+        this.newInvoice.products.delete(product);
+      });
+    } else {
+      this.newInvoice.products.delete(product);
+    }
   }
 
   save() {
@@ -142,11 +149,31 @@ export class InvoicesComponent implements OnInit {
       );
   }
 
-  silentSave(event) {
+  silentInvoiceSave(event) {
+    if (event && this.newInvoice.id) {
+      this.api.updateInvoice(this.newInvoice).then(
+        (success: any) => {
+          console.log(`success:`, success);
+          this.modal.msg.isSuccess = true;
+          this.modal.msg.text = `The Invoice #${success.id} has been saved.`;
+
+          setTimeout(() => this.modal.msg.text = '', 3000);
+          this.updateExistInvoices();
+        },
+        fail => {
+          console.log(`fail:`, fail);
+          this.modal.msg.isSuccess = false;
+          this.modal.msg.text = `Error: ${fail}`;
+        }
+      );
+    }
+  }
+
+  silentItemSave(item, event) {
 
     if (event && this.newInvoice.id) {
       console.log('silentSave:');
-      this.save();
+      this.api.saveInvoiceItems(this.newInvoice.id, new Set(item));
     }
   }
 
@@ -168,7 +195,7 @@ export class InvoicesComponent implements OnInit {
           items.forEach(item => {
             let product = this.productList.find(p => p.id === item['product_id']);
             product.quantity = item['quantity'];
-            product.__saved = true;
+            product.__invoiceItemId = item.id;
             this.newInvoice.products.add(product);
           });
         }).then(() => {

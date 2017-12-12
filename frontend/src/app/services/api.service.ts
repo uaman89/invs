@@ -80,7 +80,7 @@ export class ApiService {
     );
   }
 
-  /*addInvoiceItems(invoiceId, items: Set<any>) {
+  saveInvoiceItems(invoiceId, items: Set<any>) {
     const promises = [];
     if (invoiceId && typeof invoiceId === 'number') {
       promises.push({invoiceId});
@@ -89,40 +89,16 @@ export class ApiService {
 
       items.forEach(product => {
 
-        promises.push(
-          this.http.post(url, {
-            invoice_id: invoiceId,
-            product_id: product.id,
-            quantity: product.quantity
-          }).toPromise()
-        );
-
-      });
-
-    }
-    return Promise.all(promises);
-  }
-*/
-
-  saveInvoiceItems(invoiceId, items: Set<any>) {
-    const promises = [];
-    if (invoiceId && typeof invoiceId === 'number') {
-      promises.push({invoiceId});
-
-      const url = `${this.baseUrl}invoices/${invoiceId}/items`;
-
-      items.forEach(item => {
-
         let body = {
           invoice_id: invoiceId,
-          product_id: item.id,
-          quantity: item.quantity
+          product_id: product.id,
+          quantity: product.quantity
         };
 
-        if (item.__saved) {
+        if (product.__invoiceItemId) {
           // update saved
 
-          let itemUrl = `${url}/${item.id}`;
+          let itemUrl = `${url}/${product.__invoiceItemId}`;
           promises.push(
             this.http.put(itemUrl, body).toPromise()
           );
@@ -136,6 +112,10 @@ export class ApiService {
 
     }
     return Promise.all(promises);
+  }
+
+  deleteInvoiceItem(invoiceId, itemId){
+      return this.http.delete( `${this.baseUrl}invoices/${invoiceId}/items/${itemId}`).toPromise();
   }
 
   createInvoice(invoice) {
@@ -176,6 +156,7 @@ export class ApiService {
   }
 
   deleteInvoice(invoiceId) {
+    // it doesn't delete the items of invoice! Is it ok?
     let url = `${this.baseUrl}invoices/${invoiceId}`;
     return this.http.delete(url).toPromise();
   }

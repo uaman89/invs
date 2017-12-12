@@ -57,7 +57,7 @@
           <div class="form-group">
             <label for="customer">Customer:</label>
 
-            <select [(ngModel)]="newInvoice.customer" (ngModelChange)="silentSave($event)" name="customer" class="form-control" id="customer">
+            <select [(ngModel)]="newInvoice.customer" (ngModelChange)="silentInvoiceSave($event)" name="customer" class="form-control" id="customer">
               <option *ngFor="let customer of customerList;" [ngValue]="customer">{{customer.name}}</option>
             </select>
           </div>
@@ -71,7 +71,7 @@
                   <td>{{item.name}}</td>
                   <td><span>{{item.price | currency}}</span></td>
                   <td><input type="number" min="1"
-                             [(ngModel)]="item.quantity" (ngModelChange)="updateInvoicePrice(); silentSave($event);"
+                             [(ngModel)]="item.quantity" (ngModelChange)="updateInvoicePrice(); silentItemSave(item, $event);"
                              [ngModelOptions]="{standalone: true}"></td>
                   <td>
                     <button (click)="removeProductFromInvoiceForm(item)" type="button" class="btn btn-danger">
@@ -101,7 +101,7 @@
 
           <div class="form-group">
             <label for="discount">Discount %:</label>
-            <input [(ngModel)]="newInvoice.discount" (ngModelChange)="updateInvoicePrice(); silentSave($event);" name="discount"
+            <input [(ngModel)]="newInvoice.discount" (ngModelChange)="updateInvoicePrice(); silentInvoiceSave($event)" name="discount"
                    type="number" class="form-control" id="discount" placeholder="...enter discount" min="0" max="100">
           </div>
 
