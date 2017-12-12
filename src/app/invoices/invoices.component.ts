@@ -26,6 +26,13 @@ export class InvoicesComponent implements OnInit {
 
     api.getInvoices().then(invoices => {
       this.invoices = invoices;
+
+      this.api.getCustomers().then(customers => {
+        this.invoices.forEach(invoice => {
+          invoice.__customerData = customers.find((c => c.id === invoice['customer_id']));
+        });
+      });
+
     });
   }
 
@@ -83,17 +90,25 @@ export class InvoicesComponent implements OnInit {
   }
 
   save() {
-    this.api.createInvoice(this.newInvoice).then(
-      (success:any[]) => {
+    this.api.createInvoice(this.newInvoice).then( invoice => {
+      return this.api.addInvoiceItems(invoice['id'], this.newInvoice.products);
+    })
+    .then((success: any[]) => {
         console.log(`success:`, success);
         this.modalMsg.isSuccess = true;
-        this.modalMsg.text = `The Invoice #${success[0].invoiceId} has been created. It contains ${success.length-1} items.`;
+        this.modalMsg.text = `The Invoice #${success[0].invoiceId} has been created. It contains ${success.length - 1} items.`;
       },
       fail => {
         console.log(`fail:`, fail);
         this.modalMsg.isSuccess = false;
         this.modalMsg.text = `Error: ${fail}`;
       }
-    ).then( ()=> setTimeout(()=>this.modalMsg.text='', 3000));
+    ).then(() => setTimeout(() => this.modalMsg.text = '', 3000));
   };
+
+  editInvoice(invoice){
+    //...
+    alert('not implemented');
+  }
+
 }

@@ -1,16 +1,35 @@
 <div class="panel panel-default">
   <div class="panel-body">
-    <h2 class="float-left">Invoices</h2>
+    <h2 class="pull-left">Invoices</h2>
     <button (click)="showModal()"
             data-toggle="modal" data-target="#myModal"
-            type="button" class="btn btn-primary float-right">Create new invoice
+            type="button" class="btn btn-primary pull-right">Create new invoice
     </button>
+
+    <div *ngIf="!invoices.length" class="alert alert-info" role="alert">
+      <i class="glyphicon glyphicon-info-sign"></i>
+      No invoces found. Try to create one...
+    </div>
+
+
+    <table *ngIf="invoices.length" class="table-bordered table table-striped">
+      <tr *ngFor="let invoice of invoices">
+        <td>{{invoice.id}}</td>
+        <td>{{invoice.__customerData?.name || 'unknown'}}</td>
+        <td>{{invoice.discount}}%</td>
+        <td>{{invoice.total | currency}}</td>
+        <td>{{invoice.updatedAt | date:'short'}}</td>
+        <td>
+          <button (click)="editInvoice(invoice)" type="button" class="btn btn-warning">
+            <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+          </button>
+        </td>
+      </tr>
+    </table>
 
   </div>
 </div>
 
-
-{{ invoices.length }}
 
 <!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -47,10 +66,11 @@
                 <tr *ngFor="let item of newInvoice.products; index as i">
                   <td>{{item.name}}</td>
                   <td><span>{{item.price | currency}}</span></td>
-                  <td><input type="number"  min="1"
-                             [(ngModel)]="item.quantity" (ngModelChange)="updateInvoicePrice()" [ngModelOptions]="{standalone: true}"></td>
+                  <td><input type="number" min="1"
+                             [(ngModel)]="item.quantity" (ngModelChange)="updateInvoicePrice()"
+                             [ngModelOptions]="{standalone: true}"></td>
                   <td>
-                    <button (click)="removeProductFromInvoice(item)" type="button" class="btn btn-warning">
+                    <button (click)="removeProductFromInvoice(item)" type="button" class="btn btn-danger">
                       <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                     </button>
                   </td>

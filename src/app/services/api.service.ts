@@ -27,9 +27,9 @@ export class ApiService {
 
   }
 
-  public getInvoice(id:number): Promise<any[]> {
+  public getInvoice(id: number): Promise<any[]> {
 
-    if (!id){
+    if (!id) {
       throw Error('invoice id required!');
     }
 
@@ -70,9 +70,33 @@ export class ApiService {
     );
   }
 
+  addInvoiceItems(invoiceId, items:Set<any>) {
+    const promises = [];
+    if (invoiceId && typeof invoiceId === 'number') {
+      promises.push({invoiceId});
+
+      const url = `${this.baseUrl}invoices/${invoiceId}/items`;
+      debugger;
+
+      items.forEach(product => {
+
+        promises.push(
+          this.http.post(url, {
+            invoice_id: invoiceId,
+            product_id: product.id,
+            quantity: product.quantity
+          }).toPromise()
+        );
+
+      debugger;
+      });
+
+    }
+    return Promise.all(promises);
+  }
+
   createInvoice(invoice) {
     let url = `${this.baseUrl}invoices/`;
-    const promises = [];
 
     return this.http.post(url, {
       customer_id: invoice.customer.id,
@@ -80,30 +104,12 @@ export class ApiService {
       total: invoice.totalPrice
     }).toPromise().then(res => {
       console.log(`res:`, res);
-      if (res['id']) {
-        const invoiceId = res['id'];
-        promises.push({invoiceId});
+      return res;
 
-        url += `${invoiceId}/items`;
-
-        invoice.products.forEach(product => {
-
-          promises.push(
-            this.http.post(url, {
-              invoice_id: invoiceId,
-              product_id: product.id,
-              quantity: product.quantity
-            })
-          );
-
-        });
-
-      }
-      return Promise.all(promises);
     }, error => {
       console.error('at getCustomers:', error);
       return Error(`can't load customers`);
-    })
+    });
   }
 
 
