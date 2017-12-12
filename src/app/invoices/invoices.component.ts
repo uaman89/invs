@@ -25,6 +25,9 @@ export class InvoicesComponent implements OnInit {
     this.updateExistInvoices();
   }
 
+  ngOnInit() {
+  }
+
   updateExistInvoices() {
 
     Promise.all([
@@ -51,9 +54,6 @@ export class InvoicesComponent implements OnInit {
       discount: 0
     };
     this.modalMsg.text = null;
-  }
-
-  ngOnInit() {
   }
 
   showModal() {
@@ -89,7 +89,7 @@ export class InvoicesComponent implements OnInit {
     this.updateInvoicePrice();
   }
 
-  removeProductFromInvoice(product) {
+  removeProductFromInvoiceForm(product) {
     this.newInvoice.products.delete(product);
     this.updateInvoicePrice();
   }
