@@ -173,7 +173,21 @@ export class InvoicesComponent implements OnInit {
 
     if (event && this.newInvoice.id) {
       console.log('silentSave:');
-      this.api.saveInvoiceItems(this.newInvoice.id, new Set(item));
+      this.api.saveInvoiceItems(this.newInvoice.id, new Set([item])).then(
+        (success: any) => {
+          console.log(`success:`, success);
+          this.modal.msg.isSuccess = true;
+          this.modal.msg.text = `The Invoice item has been saved. Quantity: ${success[1].quantity}`;
+
+          setTimeout(() => this.modal.msg.text = '', 3000);
+          this.updateExistInvoices();
+        },
+        fail => {
+          console.log(`fail:`, fail);
+          this.modal.msg.isSuccess = false;
+          this.modal.msg.text = `Error: ${fail}`;
+        }
+      );;
     }
   }
 
