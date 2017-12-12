@@ -15,6 +15,7 @@ export class InvoicesComponent implements OnInit {
   public productList: any[] = [];
 
   public newInvoice: {
+    id?: number,
     customer: {
       id?: number,
       name: string;
@@ -110,12 +111,28 @@ export class InvoicesComponent implements OnInit {
   }
 
   save() {
-    this.api.createInvoice(this.newInvoice).then(invoice => {
-      return this.api.addInvoiceItems(invoice['id'], this.newInvoice.products);
-    }).then((success: any[]) => {
+
+    let result: Promise<any>;
+
+    if (!this.newInvoice.id) {
+
+      result = this.api.createInvoice(this.newInvoice).then(invoice => {
+        return this.api.addInvoiceItems(invoice['id'], this.newInvoice.products);
+      });
+
+    } else {
+      result = this.api.updateInvoice(this.newInvoice).then(invoice => {
+        return this.api.updateInvoiceItems(invoice['id'], this.newInvoice.products);
+      });
+    }
+
+    result.then(
+      (success: any[]) => {
         console.log(`success:`, success);
         this.modal.msg.isSuccess = true;
         this.modal.msg.text = `The Invoice #${success[0].invoiceId} has been created. It contains ${success.length - 1} items.`;
+
+        setTimeout(() => this.modal.msg.text = '', 3000);
         this.updateExistInvoices();
       },
       fail => {
@@ -123,13 +140,36 @@ export class InvoicesComponent implements OnInit {
         this.modal.msg.isSuccess = false;
         this.modal.msg.text = `Error: ${fail}`;
       }
+    );
+  }
+
+  update() {
+    this.api.updateInvoice(this.newInvoice).then(invoice => {
+      return this.api.addInvoiceItems(invoice['id'], this.newInvoice.products);
+    }).then((success: any[]) => {
+        console.log(`success:`, success);
+        this.modal.msg.isSuccess = true;
+        this.modal.msg.text = `The Invoice #${success[0].invoiceId} has been saved. It contains ${success.length - 1} items.`;
+        this.updateExistInvoices();
+      },
+      fail => {
+        console.log(`fail:`, fail);
+        this.modal.msg.isSuccess = false;
+        this.modal.msg.text = `Error: ${fail.toString()}`;
+      }
     ).then(() => setTimeout(() => this.modal.msg.text = '', 3000));
   };
 
   editInvoice(invoice) {
     console.log('invoice:', invoice);
 
+    if (!invoice.id){
+      return Error('if not provided');
+    }
+
     this.showModal().then(() => {
+
+      this.newInvoice.id = invoice.id;
         this.newInvoice.customer = this.customerList.find(c => c.id === invoice.customer_id);
 
         return this.api.getInvoiceItems(invoice.id).then(items => {

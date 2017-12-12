@@ -103,6 +103,31 @@ export class ApiService {
     return Promise.all(promises);
   }
 
+  //copy-paste :(
+  updateInvoiceItems(invoiceId, items: Set<any>) {
+    const promises = [];
+    if (invoiceId && typeof invoiceId === 'number') {
+      promises.push({invoiceId});
+
+      const url = `${this.baseUrl}invoices/${invoiceId}/items`;
+
+      items.forEach(item => {
+        let itemUrl = `${url}/${item.product_id}`;
+        debugger;
+        promises.push(
+          this.http.put(itemUrl, {
+            invoice_id: invoiceId,
+            product_id: item.product_id,
+            quantity: item.quantity
+          }).toPromise()
+        );
+
+      });
+
+    }
+    return Promise.all(promises);
+  }
+
   createInvoice(invoice) {
     let url = `${this.baseUrl}invoices/`;
 
@@ -115,8 +140,28 @@ export class ApiService {
       return res;
 
     }, error => {
-      console.error('at getCustomers:', error);
-      return Error(`can't load customers`);
+      alert(`can't create invoice`);
+      return Error('at createInvoice:' + error);
+    });
+  }
+
+  updateInvoice(invoice) {
+
+    //check id...
+
+    let url = `${this.baseUrl}invoices/${invoice.id}`;
+
+    return this.http.put(url, {
+      customer_id: invoice.customer.id,
+      discount: invoice.discount,
+      total: invoice.totalPrice
+    }).toPromise().then(res => {
+      console.log(`res:`, res);
+      return res;
+
+    }, error => {
+      alert(`can't update invoice`);
+      return Error('at updateInvoice:' + error);
     });
   }
 
