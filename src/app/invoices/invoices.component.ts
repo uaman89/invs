@@ -61,6 +61,7 @@ export class InvoicesComponent implements OnInit {
 
   private resetNewInvoice() {
     this.newInvoice = {
+      id: null,
       customer: {
         name: '...loading'
       },
@@ -107,7 +108,6 @@ export class InvoicesComponent implements OnInit {
 
   removeProductFromInvoiceForm(product) {
     this.newInvoice.products.delete(product);
-    this.updateInvoicePrice();
   }
 
   save() {
@@ -143,33 +143,23 @@ export class InvoicesComponent implements OnInit {
     );
   }
 
-  update() {
-    this.api.updateInvoice(this.newInvoice).then(invoice => {
-      return this.api.addInvoiceItems(invoice['id'], this.newInvoice.products);
-    }).then((success: any[]) => {
-        console.log(`success:`, success);
-        this.modal.msg.isSuccess = true;
-        this.modal.msg.text = `The Invoice #${success[0].invoiceId} has been saved. It contains ${success.length - 1} items.`;
-        this.updateExistInvoices();
-      },
-      fail => {
-        console.log(`fail:`, fail);
-        this.modal.msg.isSuccess = false;
-        this.modal.msg.text = `Error: ${fail.toString()}`;
-      }
-    ).then(() => setTimeout(() => this.modal.msg.text = '', 3000));
-  };
+  silentSave(){
+    if (this.newInvoice.id){
+      this.save();
+    }
+  }
 
   editInvoice(invoice) {
     console.log('invoice:', invoice);
 
-    if (!invoice.id){
+    if (!invoice.id) {
       return Error('if not provided');
     }
 
     this.showModal().then(() => {
 
-      this.newInvoice.id = invoice.id;
+        this.newInvoice.id = invoice.id;
+        this.newInvoice.discount = invoice.discount;
         this.newInvoice.customer = this.customerList.find(c => c.id === invoice.customer_id);
 
         return this.api.getInvoiceItems(invoice.id).then(items => {

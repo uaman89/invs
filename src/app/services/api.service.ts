@@ -113,7 +113,6 @@ export class ApiService {
 
       items.forEach(item => {
         let itemUrl = `${url}/${item.product_id}`;
-        debugger;
         promises.push(
           this.http.put(itemUrl, {
             invoice_id: invoiceId,
