@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {ApiService} from '../services/api.service';
 
+declare const $;
+
 @Component({
   selector: 'app-invoices',
   templateUrl: './invoices.component.html',
@@ -12,11 +14,23 @@ export class InvoicesComponent implements OnInit {
   public customerList: any[] = [];
   public productList: any[] = [];
 
-  public isModalReady = false;
-  public newInvoice;
-  public modalMsg = {
-    isSuccess: false,
-    text: '',
+  public newInvoice: {
+    customer: {
+      id?: number,
+      name: string;
+    };
+    products: Set<any>;
+    totalPrice: number;
+    discount: number
+  };
+
+  public modal = {
+    title: 'Invoice',
+    isModalReady: false,
+    msg: {
+      isSuccess: false,
+      text: '',
+    }
   };
 
 
@@ -53,14 +67,15 @@ export class InvoicesComponent implements OnInit {
       totalPrice: 0,
       discount: 0
     };
-    this.modalMsg.text = null;
+    this.modal.msg.text = null;
   }
 
   showModal() {
 
     this.resetNewInvoice();
+    this.modal.title = "Add Invoice";
 
-    Promise.all([
+    return Promise.all([
       this.api.getCustomers(),
       this.api.getProducts()
     ]).then(res => {
@@ -68,7 +83,7 @@ export class InvoicesComponent implements OnInit {
       this.newInvoice.customer = this.customerList[0];
       this.productList = res[1];
 
-      this.isModalReady = true;
+      this.modal.isModalReady = true;
     });
 
   }
@@ -97,24 +112,45 @@ export class InvoicesComponent implements OnInit {
   save() {
     this.api.createInvoice(this.newInvoice).then(invoice => {
       return this.api.addInvoiceItems(invoice['id'], this.newInvoice.products);
-    })
-      .then((success: any[]) => {
-          console.log(`success:`, success);
-          this.modalMsg.isSuccess = true;
-          this.modalMsg.text = `The Invoice #${success[0].invoiceId} has been created. It contains ${success.length - 1} items.`;
-          this.updateExistInvoices();
-        },
-        fail => {
-          console.log(`fail:`, fail);
-          this.modalMsg.isSuccess = false;
-          this.modalMsg.text = `Error: ${fail}`;
-        }
-      ).then(() => setTimeout(() => this.modalMsg.text = '', 3000));
+    }).then((success: any[]) => {
+        console.log(`success:`, success);
+        this.modal.msg.isSuccess = true;
+        this.modal.msg.text = `The Invoice #${success[0].invoiceId} has been created. It contains ${success.length - 1} items.`;
+        this.updateExistInvoices();
+      },
+      fail => {
+        console.log(`fail:`, fail);
+        this.modal.msg.isSuccess = false;
+        this.modal.msg.text = `Error: ${fail}`;
+      }
+    ).then(() => setTimeout(() => this.modal.msg.text = '', 3000));
   };
 
   editInvoice(invoice) {
-    //...
-    alert('not implemented');
+    console.log('invoice:', invoice);
+
+    this.showModal().then(() => {
+        this.newInvoice.customer = this.customerList.find(c => c.id === invoice.customer_id);
+
+        return this.api.getInvoiceItems(invoice.id).then(items => {
+          console.log('items:', items);
+          items.forEach(item => {
+            let {name, price} = this.productList.find(p => p.id === item['product_id']);
+            item.name = name;
+            item.price = price;
+            this.newInvoice.products.add(item);
+          });
+        }).then(() => {
+          return this.updateInvoicePrice();
+        });
+
+      },
+      error => alert('unexpected error')
+    ).then(() => {
+      this.modal.title = "Edit Invoice";
+      $('#myModal').modal('show');
+    });
+
   }
 
   delInvoice(invoice) {

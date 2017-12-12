@@ -45,6 +45,16 @@ export class ApiService {
 
   }
 
+  public getInvoiceItems(invoiceId): Promise<any[]> {
+    if (!invoiceId && typeof invoiceId !== 'number') {
+      console.error('at getInvoiceItems(): no id provided!');
+      return Promise.reject('no id provided');
+    }
+
+    const url = `${this.baseUrl}invoices/${invoiceId}/items`;
+    return this.http.get(url).toPromise();
+  }
+
   getCustomers(): Promise<any[]> {
     const url = `${this.baseUrl}customers/`;
 
@@ -70,13 +80,12 @@ export class ApiService {
     );
   }
 
-  addInvoiceItems(invoiceId, items:Set<any>) {
+  addInvoiceItems(invoiceId, items: Set<any>) {
     const promises = [];
     if (invoiceId && typeof invoiceId === 'number') {
       promises.push({invoiceId});
 
       const url = `${this.baseUrl}invoices/${invoiceId}/items`;
-      debugger;
 
       items.forEach(product => {
 
@@ -88,7 +97,6 @@ export class ApiService {
           }).toPromise()
         );
 
-      debugger;
       });
 
     }
@@ -112,7 +120,7 @@ export class ApiService {
     });
   }
 
-  deleteInvoice(invoiceId){
+  deleteInvoice(invoiceId) {
     let url = `${this.baseUrl}invoices/${invoiceId}`;
     return this.http.delete(url).toPromise();
   }
