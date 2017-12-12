@@ -1,0 +1,9 @@
+.fix-height{
+  line-height: 1.45em;
+}
+.modal-msg{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 3px -1px;
+}

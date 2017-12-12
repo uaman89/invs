@@ -3,7 +3,8 @@
     <h2 class="float-left">Invoices</h2>
     <button (click)="showModal()"
             data-toggle="modal" data-target="#myModal"
-            type="button" class="btn btn-primary float-right">Create new invoice</button>
+            type="button" class="btn btn-primary float-right">Create new invoice
+    </button>
 
   </div>
 </div>
@@ -16,40 +17,77 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button (click)="closeModal()" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;
+        </button>
         <h4 class="modal-title" id="myModalLabel">Add invoice {{!isModalReady ? '...loading' : null }}</h4>
       </div>
       <div class="modal-body">
+
+        <div *ngIf="modalMsg.text"
+             [class.alert-success]="modalMsg.isSuccess"
+             [class.alert-danger]="!modalMsg.isSuccess"
+             class="alert modal-msg" role="alert">
+          {{modalMsg.text}}
+        </div>
 
         <form>
           <div class="form-group">
             <label for="customer">Customer:</label>
 
             <select [(ngModel)]="newInvoice.customer" name="customer" class="form-control" id="customer">
-              <option *ngFor="let customer of customerList" [value]="customer">{{customer.name}}</option>
+              <option *ngFor="let customer of customerList;" [ngValue]="customer">{{customer.name}}</option>
             </select>
           </div>
 
+          <div class="panel panel-default">
+            <div class="panel-body">
+              <label>Products:</label>
+
+              <table class="table">
+                <tr *ngFor="let item of newInvoice.products; index as i">
+                  <td>{{item.name}}</td>
+                  <td><span>{{item.price | currency}}</span></td>
+                  <td><input type="number"  min="1"
+                             [(ngModel)]="item.quantity" (ngModelChange)="updateInvoicePrice()" [ngModelOptions]="{standalone: true}"></td>
+                  <td>
+                    <button (click)="removeProductFromInvoice(item)" type="button" class="btn btn-warning">
+                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    </button>
+                  </td>
+                </tr>
+              </table>
+
+              <small class="help-block">Add products to invoice</small>
+              <div class="form-group">
+                <div class="input-group">
+                  <span class="input-group-addon" id="sizing-addon1">Product:</span>
+                  <select name="add_product" class="form-control" id="addProduct" #addProduct>
+                    <option selected disabled hidden [value]="undefined">select product...</option>
+                    <option *ngFor="let product of productList; index as i;" [value]="i">{{product.name}}</option>
+                  </select>
+                  <span class="input-group-btn">
+                    <button (click)="addProductToInvoice(addProduct.value)"
+                            class="btn btn-default fix-height" type="button">Add </button>
+                  </span>
+                </div><!-- /input-group -->
+
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
-            <label for="exampleInputPassword1">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+            <label for="discount">Discount %:</label>
+            <input [(ngModel)]="newInvoice.discount" (ngModelChange)="updateInvoicePrice()" name="discount"
+                   type="number" class="form-control" id="discount" placeholder="...enter discount" min="0" max="100">
           </div>
-          <div class="form-group">
-            <label for="exampleInputFile">File input</label>
-            <input type="file" id="exampleInputFile">
-            <p class="help-block">Example block-level help text here.</p>
-          </div>
-          <div class="checkbox">
-            <label>
-              <input type="checkbox"> Check me out
-            </label>
-          </div>
+
+          <strong>Total: {{newInvoice.totalPrice | currency}}</strong>
         </form>
 
       </div>
       <div class="modal-footer">
-        <button (click)="closeModal()" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button (click)="save()" type="button" class="btn btn-primary">Save changes</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->

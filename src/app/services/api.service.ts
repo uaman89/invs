@@ -27,7 +27,7 @@ export class ApiService {
 
   }
 
-  getCustomers(): Promise<any[]>{
+  getCustomers(): Promise<any[]> {
     const url = `${this.baseUrl}customers/`;
 
     return this.http.get(url).toPromise().then(
@@ -38,85 +38,55 @@ export class ApiService {
       }
     );
   }
-/*
-  public getClientList(params = {}): Observable<any[]> {
 
-    this.page.busyIndicator.onQuery();
+  // todo: reduce copy-paste?
+  getProducts(): Promise<any[]> {
+    const url = `${this.baseUrl}products/`;
 
-    const url = `${this.baseUrl}clients`;
-    // console.log(`getClientList url:`, url);
-    // console.log(`params:`, params);
-
-    return this.http.get(url, {search: params}).map((res): any[] => {
-      this.page.busyIndicator.hide();
-      return res.json();
-    });
-  } // end getClientList
-
-  public saveClient(clientData: IClientData): Observable<any[]> {
-
-    this.page.busyIndicator.onProcess();
-
-    const body = new URLSearchParams();
-
-    // put only allowed params
-    allowedParams.forEach(key => {
-      if (clientData.hasOwnProperty(key) && clientData[key] !== '') {
-        body.set(key, clientData[key]);
+    return this.http.get(url).toPromise().then(
+      res => res,
+      error => {
+        console.error('at getCustomers:', error);
+        return Error(`can't load customers`);
       }
-    });
+    );
+  }
 
-    // handle date
-    if (!!clientData['birthDate']) {
-      const date = new Date(clientData['birthDate']);
-      body.set('birthDay', date.getDay().toString());
-      body.set('birthMonth', date.getMonth().toString());
-      body.set('birthYear', date.getFullYear().toString());
-    }
+  createInvoice(invoice) {
+    let url = `${this.baseUrl}invoices/`;
+    const promises = [];
 
-    const headers = new Headers({
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-    });
+    return this.http.post(url, {
+      customer_id: invoice.customer.id,
+      discount: invoice.discount,
+      total: invoice.totalPrice
+    }).toPromise().then(res => {
+      console.log(`res:`, res);
+      if (res['id']) {
+        const invoiceId = res['id'];
+        promises.push({invoiceId});
 
-    console.log(`body:`, body);
-    // return Observable.throw('done');
-    this.page.busyIndicator.onQuery();
+        url += `${invoiceId}/items`;
 
-    let url;
+        invoice.products.forEach(product => {
 
-    if (!!clientData.id) {
-      // update exist user
-      // but I don't know the right endpoind, so... it will be always error
+          promises.push(
+            this.http.post(url, {
+              invoice_id: invoiceId,
+              product_id: product.id,
+              quantity: product.quantity
+            })
+          );
 
-      // url = `${this.baseUrl}clients`;
-      // return this.http.post(url, body.toString(), {headers}).map((res) => {
+        });
 
-      url = `${this.baseUrl}clients/${clientData.id}`;
-      return this.http.put(url, body).map((res) => {
-        this.page.busyIndicator.hide();
-        return res.json();
-      });
-
-    } else {
-      // create new user
-      url = `${this.baseUrl}clients`;
-
-      return this.http.post(url, body.toString(), {headers}).map((res) => {
-        this.page.busyIndicator.hide();
-        return res.json();
-      });
-    }
-  }// end saveClient
+      }
+      return Promise.all(promises);
+    }, error => {
+      console.error('at getCustomers:', error);
+      return Error(`can't load customers`);
+    })
+  }
 
 
-  // this is wrong:
-  public getClientsTotalCount() {
-    const lastKnownLimit = 6404;
-    const toInfinityAndBeyond = 9999;
-    return this.getClientList({_start: lastKnownLimit, _limit: toInfinityAndBeyond})
-      .toPromise().then(res => {
-        const count = Object.keys(res).length || 0;
-        return lastKnownLimit + count;
-      });
-  }*/
 }
