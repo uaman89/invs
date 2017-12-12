@@ -112,5 +112,10 @@ export class ApiService {
     });
   }
 
+  deleteInvoice(invoiceId){
+    let url = `${this.baseUrl}invoices/${invoiceId}`;
+    return this.http.delete(url).toPromise();
+  }
+
 
 }

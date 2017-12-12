@@ -21,19 +21,24 @@ export class InvoicesComponent implements OnInit {
 
 
   constructor(private api: ApiService) {
-
     this.resetNewInvoice();
+    this.updateExistInvoices();
+  }
 
-    api.getInvoices().then(invoices => {
-      this.invoices = invoices;
+  updateExistInvoices() {
 
-      this.api.getCustomers().then(customers => {
+    Promise.all([
+      this.api.getInvoices(),
+      this.api.getCustomers()
+    ])
+      .then(res => {
+        this.invoices = res[0];
+
+        let customers = res[1];
         this.invoices.forEach(invoice => {
           invoice.__customerData = customers.find((c => c.id === invoice['customer_id']));
         });
       });
-
-    });
   }
 
   private resetNewInvoice() {
@@ -90,25 +95,36 @@ export class InvoicesComponent implements OnInit {
   }
 
   save() {
-    this.api.createInvoice(this.newInvoice).then( invoice => {
+    this.api.createInvoice(this.newInvoice).then(invoice => {
       return this.api.addInvoiceItems(invoice['id'], this.newInvoice.products);
     })
-    .then((success: any[]) => {
-        console.log(`success:`, success);
-        this.modalMsg.isSuccess = true;
-        this.modalMsg.text = `The Invoice #${success[0].invoiceId} has been created. It contains ${success.length - 1} items.`;
-      },
-      fail => {
-        console.log(`fail:`, fail);
-        this.modalMsg.isSuccess = false;
-        this.modalMsg.text = `Error: ${fail}`;
-      }
-    ).then(() => setTimeout(() => this.modalMsg.text = '', 3000));
+      .then((success: any[]) => {
+          console.log(`success:`, success);
+          this.modalMsg.isSuccess = true;
+          this.modalMsg.text = `The Invoice #${success[0].invoiceId} has been created. It contains ${success.length - 1} items.`;
+          this.updateExistInvoices();
+        },
+        fail => {
+          console.log(`fail:`, fail);
+          this.modalMsg.isSuccess = false;
+          this.modalMsg.text = `Error: ${fail}`;
+        }
+      ).then(() => setTimeout(() => this.modalMsg.text = '', 3000));
   };
 
-  editInvoice(invoice){
+  editInvoice(invoice) {
     //...
     alert('not implemented');
+  }
+
+  delInvoice(invoice) {
+    this.api.deleteInvoice(invoice.id).then(
+      res => {
+        console.log('res:', res);
+        this.updateExistInvoices();
+      },
+      error => alert('error: can`t delete invoice')
+    );
   }
 
 }
