@@ -80,7 +80,7 @@ export class ApiService {
     );
   }
 
-  addInvoiceItems(invoiceId, items: Set<any>) {
+  /*addInvoiceItems(invoiceId, items: Set<any>) {
     const promises = [];
     if (invoiceId && typeof invoiceId === 'number') {
       promises.push({invoiceId});
@@ -102,9 +102,9 @@ export class ApiService {
     }
     return Promise.all(promises);
   }
+*/
 
-  //copy-paste :(
-  updateInvoiceItems(invoiceId, items: Set<any>) {
+  saveInvoiceItems(invoiceId, items: Set<any>) {
     const promises = [];
     if (invoiceId && typeof invoiceId === 'number') {
       promises.push({invoiceId});
@@ -112,15 +112,26 @@ export class ApiService {
       const url = `${this.baseUrl}invoices/${invoiceId}/items`;
 
       items.forEach(item => {
-        let itemUrl = `${url}/${item.product_id}`;
-        promises.push(
-          this.http.put(itemUrl, {
-            invoice_id: invoiceId,
-            product_id: item.product_id,
-            quantity: item.quantity
-          }).toPromise()
-        );
 
+        let body = {
+          invoice_id: invoiceId,
+          product_id: item.id,
+          quantity: item.quantity
+        };
+
+        if (item.__saved) {
+          // update saved
+
+          let itemUrl = `${url}/${item.id}`;
+          promises.push(
+            this.http.put(itemUrl, body).toPromise()
+          );
+        } else {
+          // create new one
+          promises.push(
+            this.http.post(url, body).toPromise()
+          );
+        }
       });
 
     }
