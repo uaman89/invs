@@ -27,6 +27,24 @@ export class ApiService {
 
   }
 
+  public getInvoice(id:number): Promise<any[]> {
+
+    if (!id){
+      throw Error('invoice id required!');
+    }
+
+    const url = `${this.baseUrl}invoices/${id}`;
+
+    return this.http.get(url).toPromise().then(
+      res => res,
+      error => {
+        console.error('at getInvoices:', error);
+        return Error(`can't load invoices`);
+      }
+    );
+
+  }
+
   getCustomers(): Promise<any[]> {
     const url = `${this.baseUrl}customers/`;
 
