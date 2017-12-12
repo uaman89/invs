@@ -1,5 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {ApiService} from '../services/api.service';
+import {Subject} from 'rxjs/Subject';
+import {debounceTime} from 'rxjs/operators';
 
 declare const $;
 
@@ -34,6 +36,8 @@ export class InvoicesComponent implements OnInit {
     }
   };
 
+  public silentInvoiceSave = new Subject();
+  public silentItemSave = new Subject();
 
   constructor(private api: ApiService) {
     this.resetNewInvoice();
@@ -41,6 +45,16 @@ export class InvoicesComponent implements OnInit {
   }
 
   ngOnInit() {
+
+    this.silentInvoiceSave.pipe(
+      debounceTime(300),
+    ).subscribe(() => this.saveInvoice());
+
+
+    this.silentItemSave.pipe(
+      debounceTime(300),
+    ).subscribe((invoice) => this.saveInvoiceItem(invoice));
+
   }
 
   updateExistInvoices() {
@@ -108,7 +122,6 @@ export class InvoicesComponent implements OnInit {
   }
 
   removeProductFromInvoiceForm(product) {
-    debugger;
     if (product.__invoiceItemId) {
       this.api.deleteInvoiceItem(this.newInvoice.id, product.__invoiceItemId).then(() => {
         this.newInvoice.products.delete(product);
@@ -149,8 +162,8 @@ export class InvoicesComponent implements OnInit {
       );
   }
 
-  silentInvoiceSave(event) {
-    if (event && this.newInvoice.id) {
+  saveInvoice() {
+    if (this.newInvoice.id) {
       this.api.updateInvoice(this.newInvoice).then(
         (success: any) => {
           console.log(`success:`, success);
@@ -169,9 +182,9 @@ export class InvoicesComponent implements OnInit {
     }
   }
 
-  silentItemSave(item, event) {
+  saveInvoiceItem(item) {
 
-    if (event && this.newInvoice.id) {
+    if (this.newInvoice.id) {
       console.log('silentSave:');
       this.api.saveInvoiceItems(this.newInvoice.id, new Set([item])).then(
         (success: any) => {
@@ -187,7 +200,7 @@ export class InvoicesComponent implements OnInit {
           this.modal.msg.isSuccess = false;
           this.modal.msg.text = `Error: ${fail}`;
         }
-      );;
+      );
     }
   }
 
