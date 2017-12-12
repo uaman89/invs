@@ -8,5 +8,9 @@
     "sequelize": "^3.20.0",
     "sqlite3": "latest",
     "lodash": "latest"
-  }
+  },
+   "scripts": {
+     "build-frontend": "cd ../frontend && npm run build",
+     "start": "npm run build-frontend && node app.js"
+   }
 }
